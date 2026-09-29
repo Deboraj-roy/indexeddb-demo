@@ -33,11 +33,13 @@ export class LogService implements ErrorHandler {
 
     return new Promise((resolve, reject) => {
 
+      // Open the IndexedDB database with the specified name and version.
       const request = indexedDB.open(
         this.dbName,
         this.dbVersion
       );
 
+      // Handle the onupgradeneeded event to create the object store if it doesn't exist.
       request.onupgradeneeded = (event: any) => {
 
         const db: IDBDatabase = event.target.result;
@@ -51,10 +53,12 @@ export class LogService implements ErrorHandler {
         }
       };
 
+      // Handle the onsuccess event to resolve the promise with the opened database.
       request.onsuccess = () => {
         resolve(request.result);
       };
 
+      // Handle the onerror event to reject the promise with the error.
       request.onerror = () => {
         console.error(
           'Failed to open E1Log IndexedDB:',
