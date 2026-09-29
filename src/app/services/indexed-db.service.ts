@@ -210,9 +210,11 @@ export class IndexedDbService {
 
   async getProducts(): Promise<Product[]> {
 
+    const db = await this.dbReady;
+
     return new Promise((resolve, reject) => {
 
-      const transaction = this.db.transaction(
+      const transaction = db.transaction(
         'products',
         'readonly'
       );
