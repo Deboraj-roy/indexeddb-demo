@@ -145,4 +145,27 @@ export class AppComponent implements OnInit {
     };
   }
 
+
+  async exportData(): Promise<void> {
+
+    const data = await this.db.exportData();
+
+    const json = JSON.stringify(data, null, 2);
+
+    const blob = new Blob(
+      [json],
+      { type: 'application/json' }
+    );
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = `indexeddb-backup-${new Date().getTime()}.json`;
+
+    link.click();
+
+    window.URL.revokeObjectURL(url);
+  }
 }
