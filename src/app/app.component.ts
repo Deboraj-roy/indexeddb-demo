@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Employee } from './models/employee';
 import { IndexedDbService } from './services/indexed-db.service';
 import { Product } from './models/product';
+import { LogService } from './services/log.service';
 
 @Component({
   selector: 'app-root',
@@ -34,7 +35,8 @@ export class AppComponent implements OnInit {
   editingProductId?: number;
 
   constructor(
-    private db: IndexedDbService
+    private db: IndexedDbService,
+    private logService: LogService
   ) { }
 
   ngOnInit(): void {
@@ -168,4 +170,24 @@ export class AppComponent implements OnInit {
 
     window.URL.revokeObjectURL(url);
   }
+
+  ///===============================================
+
+  testLogging(): void {
+
+    this.logService.error(
+      'Test application error',
+      'Test stack trace'
+    );
+
+    this.logService.warning(
+      'Test application warning'
+    );
+
+    this.logService.info(
+      'Test application information'
+    );
+  }
+
+
 }
