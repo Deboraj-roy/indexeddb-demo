@@ -14,13 +14,59 @@ export class IndexedDbService {
   private db!: IDBDatabase;
   private dbReady!: Promise<IDBDatabase>;
 
+  // constructor() {
+  //   this.openDatabase();
+  // }
+
   constructor() {
-    this.openDatabase();
+    this.dbReady = this.openDatabase();
   }
 
-  private openDatabase(): void {
+  // private openDatabase(): void {
 
-    const request = indexedDB.open(this.dbName, this.dbVersion);
+  //   const request = indexedDB.open(this.dbName, this.dbVersion);
+
+  //   request.onupgradeneeded = (event: any) => {
+
+  //     const db = event.target.result;
+
+  //     if (!db.objectStoreNames.contains('employees')) {
+  //       db.createObjectStore('employees', {
+  //         keyPath: 'id',
+  //         autoIncrement: true
+  //       });
+  //     }
+
+  //     if (!db.objectStoreNames.contains('products')) {
+  //       db.createObjectStore('products', {
+  //         keyPath: 'id',
+  //         autoIncrement: true
+  //       });
+  //     }
+  //   };
+
+  //   request.onsuccess = (event: any) => {
+  //     this.db = event.target.result;
+  //     console.log('IndexedDB connected');
+  //   };
+
+  //   request.onerror = (event: any) => {
+  //     console.error('IndexedDB error:', event.target.error);
+  //   };
+  // }
+
+  // -------------------------
+  // Employee CRUD
+  // -------------------------
+
+  private openDatabase(): Promise<IDBDatabase> {
+
+  return new Promise((resolve, reject) => {
+
+    const request = indexedDB.open(
+      this.dbName,
+      this.dbVersion
+    );
 
     request.onupgradeneeded = (event: any) => {
 
@@ -42,55 +88,93 @@ export class IndexedDbService {
     };
 
     request.onsuccess = (event: any) => {
+
       this.db = event.target.result;
+
       console.log('IndexedDB connected');
+
+      resolve(this.db);
     };
 
-    request.onerror = (event: any) => {
-      console.error('IndexedDB error:', event.target.error);
+    request.onerror = () => {
+      reject(request.error);
     };
-  }
+  });
+}
 
-  // -------------------------
-  // Employee CRUD
-  // -------------------------
+  // addEmployee(employee: Employee): void {
 
-  addEmployee(employee: Employee): void {
+  //   const transaction = this.db.transaction(
+  //     'employees',
+  //     'readwrite'
+  //   );
 
-    const transaction = this.db.transaction(
+  //   const store = transaction.objectStore('employees');
+
+  //   store.add(employee);
+  // }
+
+  async addEmployee(employee: Employee): Promise<void> {
+
+  const db = await this.dbReady;
+
+  const transaction = db.transaction(
+    'employees',
+    'readwrite'
+  );
+
+  transaction.objectStore('employees').add(employee);
+}
+
+  // getEmployees(): Promise<Employee[]> {
+
+  //   return new Promise((resolve, reject) => {
+
+  //     const transaction = this.db.transaction(
+  //       'employees',
+  //       'readonly'
+  //     );
+
+  //     const store = transaction.objectStore('employees');
+
+  //     const request = store.getAll();
+
+  //     request.onsuccess = () => {
+  //       resolve(request.result);
+  //     };
+
+  //     request.onerror = () => {
+  //       reject(request.error);
+  //     };
+  //   });
+  // }
+
+  async getEmployees(): Promise<Employee[]> {
+
+  const db = await this.dbReady;
+
+  return new Promise((resolve, reject) => {
+
+    const transaction = db.transaction(
       'employees',
-      'readwrite'
+      'readonly'
     );
 
-    const store = transaction.objectStore('employees');
+    const request = transaction
+      .objectStore('employees')
+      .getAll();
 
-    store.add(employee);
-  }
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
 
-  getEmployees(): Promise<Employee[]> {
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
 
-    return new Promise((resolve, reject) => {
-
-      const transaction = this.db.transaction(
-        'employees',
-        'readonly'
-      );
-
-      const store = transaction.objectStore('employees');
-
-      const request = store.getAll();
-
-      request.onsuccess = () => {
-        resolve(request.result);
-      };
-
-      request.onerror = () => {
-        reject(request.error);
-      };
-    });
-  }
-
-  updateEmployee(employee: Employee): void {
+  async updateEmployee(employee: Employee): Promise<void> {
 
     const transaction = this.db.transaction(
       'employees',
@@ -100,7 +184,7 @@ export class IndexedDbService {
     transaction.objectStore('employees').put(employee);
   }
 
-  deleteEmployee(id: number): void {
+  async deleteEmployee(id: number): Promise<void> {
 
     const transaction = this.db.transaction(
       'employees',
@@ -114,7 +198,7 @@ export class IndexedDbService {
   // Product CRUD
   // -------------------------
 
-  addProduct(product: Product): void {
+  async addProduct(product: Product): Promise<void> {
 
     const transaction = this.db.transaction(
       'products',
@@ -124,7 +208,7 @@ export class IndexedDbService {
     transaction.objectStore('products').add(product);
   }
 
-  getProducts(): Promise<Product[]> {
+  async getProducts(): Promise<Product[]> {
 
     return new Promise((resolve, reject) => {
 
@@ -147,7 +231,7 @@ export class IndexedDbService {
     });
   }
 
-  updateProduct(product: Product): void {
+  async updateProduct(product: Product): Promise<void> {
 
     const transaction = this.db.transaction(
       'products',
@@ -157,7 +241,7 @@ export class IndexedDbService {
     transaction.objectStore('products').put(product);
   }
 
-  deleteProduct(id: number): void {
+  async deleteProduct(id: number): Promise<void> {
 
     const transaction = this.db.transaction(
       'products',
