@@ -1,7 +1,8 @@
-import { NgModule } from '@angular/core';
+import { ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
+import { LogService } from './services/log.service';
 
 @NgModule({
   declarations: [
@@ -11,7 +12,12 @@ import { AppComponent } from './app.component';
     BrowserModule,
     FormsModule
   ],
-  providers: [],
+  providers: [
+    {
+      provide: ErrorHandler,
+      useExisting: LogService
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

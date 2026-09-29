@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { ErrorHandler, Injectable } from '@angular/core';
 
 export interface E1Log {
   id?: number;
@@ -12,7 +12,7 @@ export interface E1Log {
 @Injectable({
   providedIn: 'root'
 })
-export class LogService {
+export class LogService implements ErrorHandler {
 
   private readonly dbName = 'E1LogDB';
   private readonly dbVersion = 1;
@@ -59,6 +59,17 @@ export class LogService {
         reject(request.error);
       };
     });
+  }
+
+  handleError(error: any): void {
+
+    const message = error?.message || String(error);
+    const stack = error?.stack;
+
+    this.error(message, stack);
+
+    // Keep normal Angular/browser console error
+    console.error(error);
   }
 
   /**
@@ -164,4 +175,82 @@ export class LogService {
       };
     });
   }
+
+  exportLogs(): void {
+
+    this.getLogs().then(logs => {
+
+      if (!logs || logs.length === 0) {
+        console.warn('No log data available to export.');
+        return;
+      }
+
+      const json = JSON.stringify(logs, null, 2);
+
+      const blob = new Blob(
+        [json],
+        { type: 'application/json' }
+      );
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+
+      const date = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-');
+
+      link.href = url;
+      link.download = `E1Log_${date}.json`;
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(url);
+    })
+      .catch(error => {
+
+        console.error(
+          'Failed to export E1Log:',
+          error
+        );
+      });
+  }
+
+  // handleError(error: any): void {
+
+  //   const message = this.getErrorMessage(error);
+  //   const stack = this.getErrorStack(error);
+
+  //   this.logService.error(message, stack);
+
+  //   // Keep Angular's normal console error behavior
+  //   console.error(error);
+  // }
+
+  // private getErrorMessage(error: any): string {
+
+  //   if (!error) {
+  //     return 'Unknown application error';
+  //   }
+
+  //   if (error.message) {
+  //     return error.message;
+  //   }
+
+  //   return String(error);
+  // }
+
+  // private getErrorStack(error: any): string | undefined {
+
+  //   if (error && error.stack) {
+  //     return error.stack;
+  //   }
+
+  //   return undefined;
+  // }
+
 }

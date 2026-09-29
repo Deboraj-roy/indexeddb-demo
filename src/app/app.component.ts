@@ -189,5 +189,8 @@ export class AppComponent implements OnInit {
     );
   }
 
+  exportLogs(): void {
+    this.logService.exportLogs();
+  }
 
 }
