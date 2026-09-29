@@ -27,6 +27,8 @@ export class LogService implements ErrorHandler {
 
   }
 
+  // Add more comment about this function
+  // This function opens the IndexedDB database and creates the object store if it doesn't exist.
   private openDatabase(): Promise<IDBDatabase> {
 
     return new Promise((resolve, reject) => {
@@ -64,6 +66,9 @@ export class LogService implements ErrorHandler {
     });
   }
 
+
+  // Add more comment about this function
+  // This function is called by Angular's ErrorHandler to log errors.
   handleError(error: any): void {
 
     const message = error?.message || String(error);
