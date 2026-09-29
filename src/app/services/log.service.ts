@@ -22,6 +22,9 @@ export class LogService implements ErrorHandler {
 
   constructor() {
     this.dbReady = this.openDatabase();
+    // Catch JavaScript errors that are not handled by Angular ErrorHandler.
+    this.registerGlobalErrorHandlers();
+
   }
 
   private openDatabase(): Promise<IDBDatabase> {
@@ -70,6 +73,72 @@ export class LogService implements ErrorHandler {
 
     // Keep normal Angular/browser console error
     console.error(error);
+  }
+
+
+  /**
+   * Registers browser-level global error handlers.
+   *
+   * window.onerror:
+   * Captures JavaScript runtime errors that may not
+   * be handled by Angular's ErrorHandler.
+   *
+   * unhandledrejection:
+   * Captures unhandled Promise/async errors.
+   */
+  private registerGlobalErrorHandlers(): void {
+
+    window.onerror = (
+      message,
+      source,
+      lineno,
+      colno,
+      error
+    ) => {
+
+      const errorMessage =
+        error?.message ||
+        String(message);
+
+      const stack =
+        error?.stack ||
+        `Source: ${source}, Line: ${lineno}, Column: ${colno}`;
+
+      this.error(
+        errorMessage,
+        stack
+      );
+
+      // Return false so the browser keeps its normal error handling.
+      return false;
+    };
+
+
+    window.addEventListener(
+      'unhandledrejection',
+      (event: PromiseRejectionEvent) => {
+
+        const reason = event.reason;
+
+        const message =
+          reason?.message ||
+          String(reason);
+
+        const stack =
+          reason?.stack;
+
+        this.error(
+          message,
+          stack
+        );
+
+        // Keep the normal browser unhandled-rejection behavior.
+        console.error(
+          'Unhandled Promise rejection:',
+          reason
+        );
+      }
+    );
   }
 
   /**
@@ -201,7 +270,8 @@ export class LogService implements ErrorHandler {
         .replace(/[:.]/g, '-');
 
       link.href = url;
-      link.download = `E1Log_${date}.json`;
+      // link.download = `E1Log_${date}.json`;
+      link.download = `E1Log_${new Date().toISOString().slice(0, 10)}.json`;
 
       document.body.appendChild(link);
 
