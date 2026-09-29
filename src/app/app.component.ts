@@ -80,9 +80,19 @@ export class AppComponent implements OnInit {
 
   async deleteEmployee(id: number): Promise<void> {
 
-    await this.db.deleteEmployee(id);
+    try {
+      // An exception in an async method becomes a rejected Promise. Angular's
+      // event handling may consume that rejection, so log it explicitly.
+      await this.db.deleteEmployee(id);
+      await this.loadEmployees();
 
-    await this.loadEmployees();
+      throw new Error('Test error for logging 999999');
+    } catch (error) {
+      this.logService.error(
+        error instanceof Error ? error.message : String(error),
+        error instanceof Error ? error.stack : undefined
+      );
+    }
   }
 
   clearEmployeeForm(): void {
