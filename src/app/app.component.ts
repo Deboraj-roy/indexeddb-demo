@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Employee } from './models/employee';
 import { IndexedDbService } from './services/indexed-db.service';
+import { Product } from './models/product';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,17 @@ export class AppComponent implements OnInit {
   };
 
   editingEmployeeId?: number;
+  //===============================================
+
+  products: Product[] = [];
+
+  product: Product = {
+    name: '',
+    price: 0,
+    quantity: 0
+  };
+
+  editingProductId?: number;
 
   constructor(
     private db: IndexedDbService
@@ -27,6 +39,8 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadEmployees();
+
+    this.loadProducts();
   }
 
   async loadEmployees(): Promise<void> {
@@ -79,4 +93,56 @@ export class AppComponent implements OnInit {
       department: ''
     };
   }
+
+
+  async loadProducts(): Promise<void> {
+    this.products = await this.db.getProducts();
+  }
+
+  async saveProduct(): Promise<void> {
+
+    if (this.editingProductId) {
+
+      await this.db.updateProduct({
+        id: this.editingProductId,
+        ...this.product
+      });
+
+    } else {
+
+      await this.db.addProduct(this.product);
+    }
+
+    this.clearProductForm();
+    await this.loadProducts();
+  }
+  editProduct(product: Product): void {
+
+    this.editingProductId = product.id;
+
+    this.product = {
+      name: product.name,
+      price: product.price,
+      quantity: product.quantity
+    };
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+
+    await this.db.deleteProduct(id);
+
+    await this.loadProducts();
+  }
+
+  clearProductForm(): void {
+
+    this.editingProductId = undefined;
+
+    this.product = {
+      name: '',
+      price: 0,
+      quantity: 0
+    };
+  }
+
 }
