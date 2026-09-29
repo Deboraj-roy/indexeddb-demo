@@ -1,141 +1,144 @@
-<h1>IndexedDB Prototype</h1>
+<main class="dashboard-shell">
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">LOCAL DATA WORKSPACE</p>
+      <h1>IndexedDB Prototype</h1>
+      <p class="subtitle">Manage your local records with a simple, reliable workspace.</p>
+    </div>
 
-<h2>Employees</h2>
+    <button class="export-button" (click)="exportData()">
+      <span aria-hidden="true">&#8595;</span>
+      Export Data
+    </button>
+  </header>
 
-<div>
+  <section class="data-section">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">TEAM DIRECTORY</p>
+        <h2>Employees</h2>
+      </div>
+      <span class="record-label">{{ employees.length }} records</span>
+    </div>
 
-  <input type="text" placeholder="Name" [(ngModel)]="employee.name">
+    <div class="form-card">
+      <div class="field-group">
+        <label for="employee-name">Name</label>
+        <input id="employee-name" type="text" placeholder="Name" [(ngModel)]="employee.name">
+      </div>
 
-  <input type="email" placeholder="Email" [(ngModel)]="employee.email">
+      <div class="field-group">
+        <label for="employee-email">Email</label>
+        <input id="employee-email" type="email" placeholder="Email" [(ngModel)]="employee.email">
+      </div>
 
-  <input type="text" placeholder="Department" [(ngModel)]="employee.department">
+      <div class="field-group">
+        <label for="employee-department">Department</label>
+        <input id="employee-department" type="text" placeholder="Department" [(ngModel)]="employee.department">
+      </div>
 
-  <button (click)="saveEmployee()">
-    {{ editingEmployeeId ? 'Update' : 'Add' }}
-  </button>
-
-  <button *ngIf="editingEmployeeId" (click)="clearEmployeeForm()">
-    Cancel
-  </button>
-
-</div>
-
-<hr>
-
-<table border="1">
-
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Department</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-
-  <tbody>
-
-    <tr *ngFor="let employee of employees">
-
-      <td>{{ employee.id }}</td>
-
-      <td>{{ employee.name }}</td>
-
-      <td>{{ employee.email }}</td>
-
-      <td>{{ employee.department }}</td>
-
-      <td>
-
-        <button (click)="editEmployee(employee)">
-          Edit
+      <div class="form-actions">
+        <button class="primary-button" (click)="saveEmployee()">
+          {{ editingEmployeeId ? 'Update' : 'Add' }}
         </button>
 
-        <button (click)="deleteEmployee(employee.id!)">
-          Delete
+        <button class="secondary-button" *ngIf="editingEmployeeId" (click)="clearEmployeeForm()">
+          Cancel
         </button>
+      </div>
+    </div>
 
-      </td>
+    <div class="table-card">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Department</th>
+              <th>Action</th>
+            </tr>
+          </thead>
 
-    </tr>
+          <tbody>
+            <tr *ngFor="let employee of employees">
+              <td><span class="id-badge">{{ employee.id }}</span></td>
+              <td class="strong-cell">{{ employee.name }}</td>
+              <td>{{ employee.email }}</td>
+              <td>{{ employee.department }}</td>
+              <td class="actions-cell">
+                <button class="table-button edit-button" (click)="editEmployee(employee)">Edit</button>
+                <button class="table-button delete-button" (click)="deleteEmployee(employee.id!)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-  </tbody>
+  <section class="data-section">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">INVENTORY TRACKER</p>
+        <h2>Products</h2>
+      </div>
+      <span class="record-label">{{ products.length }} records</span>
+    </div>
 
-</table>
+    <div class="form-card">
+      <div class="field-group field-wide">
+        <label for="product-name">Product name</label>
+        <input id="product-name" type="text" placeholder="Product name" [(ngModel)]="product.name">
+      </div>
 
+      <div class="field-group">
+        <label for="product-price">Price</label>
+        <input id="product-price" type="number" placeholder="Price" [(ngModel)]="product.price">
+      </div>
 
+      <div class="field-group">
+        <label for="product-quantity">Quantity</label>
+        <input id="product-quantity" type="number" placeholder="Quantity" [(ngModel)]="product.quantity">
+      </div>
 
-<hr>
-
-<h2>Products</h2>
-
-<div>
-
-  <input type="text" placeholder="Product name" [(ngModel)]="product.name">
-
-  <input type="number" placeholder="Price" [(ngModel)]="product.price">
-
-  <input type="number" placeholder="Quantity" [(ngModel)]="product.quantity">
-
-  <button (click)="saveProduct()">
-    {{ editingProductId ? 'Update' : 'Add' }}
-  </button>
-
-  <button *ngIf="editingProductId" (click)="clearProductForm()">
-    Cancel
-  </button>
-
-</div>
-
-<hr>
-
-<table border="1">
-
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Price</th>
-      <th>Quantity</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-
-  <tbody>
-
-    <tr *ngFor="let product of products">
-
-      <td>{{ product.id }}</td>
-
-      <td>{{ product.name }}</td>
-
-      <td>{{ product.price }}</td>
-
-      <td>{{ product.quantity }}</td>
-
-      <td>
-
-        <button (click)="editProduct(product)">
-          Edit
+      <div class="form-actions">
+        <button class="primary-button" (click)="saveProduct()">
+          {{ editingProductId ? 'Update' : 'Add' }}
         </button>
-
-        <button (click)="deleteProduct(product.id!)">
-          Delete
+        <button class="secondary-button" *ngIf="editingProductId" (click)="clearProductForm()">
+          Cancel
         </button>
+      </div>
+    </div>
 
-      </td>
-
-    </tr>
-
-  </tbody>
-
-</table>
-
-<h1>IndexedDB Prototype</h1>
-
-<button (click)="exportData()">
-  Export Data
-</button>
-
-<hr>
+    <div class="table-card">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of products">
+              <td><span class="id-badge">{{ product.id }}</span></td>
+              <td class="strong-cell">{{ product.name }}</td>
+              <td>{{ product.price }}</td>
+              <td>{{ product.quantity }}</td>
+              <td class="actions-cell">
+                <button class="table-button edit-button" (click)="editProduct(product)">Edit</button>
+                <button class="table-button delete-button" (click)="deleteProduct(product.id!)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
