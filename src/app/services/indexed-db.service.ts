@@ -5,8 +5,6 @@ export interface E1Log {
   LogType: string;
   Message: string;
   DateTime: string;
-  Url?: string;
-  Stack?: string;
 }
 
 @Injectable({
@@ -27,7 +25,6 @@ export class IndexedDBService implements ErrorHandler {
 
   }
 
-  // Add more comment about this function
   // This function opens the IndexedDB database and creates the object store if it doesn't exist.
   private openDatabase(): Promise<IDBDatabase> {
 
@@ -71,8 +68,10 @@ export class IndexedDBService implements ErrorHandler {
   }
 
 
-  // Add more comment about this function
-  // This function is called by Angular's ErrorHandler to log errors.
+
+  /**
+   * This function is called by Angular's ErrorHandler to log errors.
+   */
   handleError(error: any): void {
 
     const message = error?.message || String(error);
@@ -161,9 +160,7 @@ export class IndexedDBService implements ErrorHandler {
     this.addLog({
       LogType: 'Error',
       Message: message,
-      DateTime: new Date().toISOString(),
-      Url: window.location.href,
-      Stack: stack
+      DateTime: new Date().toISOString()
     });
   }
 
@@ -178,7 +175,6 @@ export class IndexedDBService implements ErrorHandler {
       LogType: 'Warning',
       Message: message,
       DateTime: new Date().toISOString(),
-      Url: window.location.href
     });
   }
 
@@ -192,8 +188,22 @@ export class IndexedDBService implements ErrorHandler {
     this.addLog({
       LogType: 'Info',
       Message: message,
-      DateTime: new Date().toISOString(),
-      Url: window.location.href
+      DateTime: new Date().toISOString() 
+    });
+  }
+
+   /**
+   * Store a log
+   */
+  log(
+    LogType: string,
+    message: string 
+  ): void {
+
+    this.addLog({
+      LogType: LogType,
+      Message: message,
+      DateTime: new Date().toISOString() 
     });
   }
 
@@ -279,7 +289,6 @@ export class IndexedDBService implements ErrorHandler {
         .replace(/[:.]/g, '-');
 
       link.href = url;
-      // link.download = `E1Log_${date}.json`;
       link.download = `E1Log_${new Date().toISOString().slice(0, 10)}.json`;
 
       document.body.appendChild(link);
@@ -298,38 +307,5 @@ export class IndexedDBService implements ErrorHandler {
         );
       });
   }
-
-  // handleError(error: any): void {
-
-  //   const message = this.getErrorMessage(error);
-  //   const stack = this.getErrorStack(error);
-
-  //   this.logService.error(message, stack);
-
-  //   // Keep Angular's normal console error behavior
-  //   console.error(error);
-  // }
-
-  // private getErrorMessage(error: any): string {
-
-  //   if (!error) {
-  //     return 'Unknown application error';
-  //   }
-
-  //   if (error.message) {
-  //     return error.message;
-  //   }
-
-  //   return String(error);
-  // }
-
-  // private getErrorStack(error: any): string | undefined {
-
-  //   if (error && error.stack) {
-  //     return error.stack;
-  //   }
-
-  //   return undefined;
-  // }
 
 }
