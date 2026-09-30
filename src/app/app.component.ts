@@ -89,8 +89,7 @@ export class AppComponent implements OnInit {
       throw new Error('Test error for logging 999999');
     } catch (error) {
       this.logService.error(
-        error instanceof Error ? error.message : String(error),
-        error instanceof Error ? error.stack : undefined
+        error instanceof Error ? error.message : String(error)
       );
     }
   }
@@ -186,8 +185,7 @@ export class AppComponent implements OnInit {
   testLogging(): void {
 
     this.logService.error(
-      'Test application error',
-      'Test stack trace'
+      'Test application error'
     );
 
     this.logService.warning(

@@ -75,10 +75,7 @@ export class IndexedDBService implements ErrorHandler {
   handleError(error: any): void {
 
     const message = error?.message || String(error);
-    const stack = error?.stack;
-
-    this.error(message, stack);
-
+    this.error(message);
     // Keep normal Angular/browser console error
     console.error(error);
   }
@@ -111,10 +108,10 @@ export class IndexedDBService implements ErrorHandler {
       const stack =
         error?.stack ||
         `Source: ${source}, Line: ${lineno}, Column: ${colno}`;
+      var errorMessageWithStack = errorMessage + '\n' + stack;
 
       this.error(
-        errorMessage,
-        stack
+        errorMessageWithStack 
       );
 
       // Return false so the browser keeps its normal error handling.
@@ -131,13 +128,13 @@ export class IndexedDBService implements ErrorHandler {
         const message =
           reason?.message ||
           String(reason);
-
         const stack =
-          reason?.stack;
+          reason?.stack ||
+          `Source: ${reason?.source}, Line: ${reason?.lineno}, Column: ${reason?.colno}`;
+        var errorMessageWithStack = message + '\n' + stack;
 
         this.error(
-          message,
-          stack
+          errorMessageWithStack 
         );
 
         // Keep the normal browser unhandled-rejection behavior.
@@ -153,8 +150,7 @@ export class IndexedDBService implements ErrorHandler {
    * Store an error log
    */
   error(
-    message: string,
-    stack?: string
+    message: string 
   ): void {
 
     this.addLog({
