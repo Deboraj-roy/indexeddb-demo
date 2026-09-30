@@ -12,7 +12,7 @@ export interface E1Log {
 @Injectable({
   providedIn: 'root'
 })
-export class LogService implements ErrorHandler {
+export class IndexedDBService implements ErrorHandler {
 
   private readonly dbName = 'E1LogDB';
   private readonly dbVersion = 1;

@@ -2,7 +2,7 @@ import { ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
-import { LogService } from './services/log.service';
+import { IndexedDBService } from './services/indexed-db.service';
 
 @NgModule({
   declarations: [
@@ -15,7 +15,7 @@ import { LogService } from './services/log.service';
   providers: [
     {
       provide: ErrorHandler,
-      useExisting: LogService
+      useExisting: IndexedDBService
     }
   ],
   bootstrap: [AppComponent]

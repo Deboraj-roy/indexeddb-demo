@@ -5,7 +5,7 @@ import { Product } from '../models/product';
 @Injectable({
   providedIn: 'root'
 })
-export class IndexedDbService {
+export class MainIndexedDbService {
 
   private dbName = 'PrototypeDB';
   private dbVersion = 1;

@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Employee } from './models/employee';
-import { IndexedDbService } from './services/indexed-db.service';
+import { MainIndexedDbService } from './services/main-indexed-db.service';
 import { Product } from './models/product';
-import { LogService } from './services/log.service';
+import { IndexedDBService } from './services/indexed-db.service';
 
 @Component({
   selector: 'app-root',
@@ -35,8 +35,8 @@ export class AppComponent implements OnInit {
   editingProductId?: number;
 
   constructor(
-    private db: IndexedDbService,
-    private logService: LogService
+    private db: MainIndexedDbService,
+    private logService: IndexedDBService
   ) { }
 
   ngOnInit(): void {
