@@ -1,225 +1,246 @@
-import { Injectable } from '@angular/core';
-import { Employee } from '../models/employee';
-import { Product } from '../models/product';
+import { ErrorHandler, Injectable } from '@angular/core';
+
+export interface E1Log {
+  id?: number;
+  LogType: string;
+  Message: string;
+  DateTime: string;
+  Url?: string;
+  Stack?: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
-export class IndexedDbService {
+export class LogService implements ErrorHandler {
 
-  private dbName = 'PrototypeDB';
-  private dbVersion = 1;
+  private readonly dbName = 'E1LogDB';
+  private readonly dbVersion = 1;
+  private readonly storeName = 'E1Log';
 
-  // private db!: IDBDatabase;
-  private db!: IDBDatabase;
-  private dbReady!: Promise<IDBDatabase>;
-
-  // constructor() {
-  //   this.openDatabase();
-  // }
+  private dbReady: Promise<IDBDatabase>;
 
   constructor() {
     this.dbReady = this.openDatabase();
+    // Catch JavaScript errors that are not handled by Angular ErrorHandler.
+    this.registerGlobalErrorHandlers();
+
   }
 
-  // private openDatabase(): void {
-
-  //   const request = indexedDB.open(this.dbName, this.dbVersion);
-
-  //   request.onupgradeneeded = (event: any) => {
-
-  //     const db = event.target.result;
-
-  //     if (!db.objectStoreNames.contains('employees')) {
-  //       db.createObjectStore('employees', {
-  //         keyPath: 'id',
-  //         autoIncrement: true
-  //       });
-  //     }
-
-  //     if (!db.objectStoreNames.contains('products')) {
-  //       db.createObjectStore('products', {
-  //         keyPath: 'id',
-  //         autoIncrement: true
-  //       });
-  //     }
-  //   };
-
-  //   request.onsuccess = (event: any) => {
-  //     this.db = event.target.result;
-  //     console.log('IndexedDB connected');
-  //   };
-
-  //   request.onerror = (event: any) => {
-  //     console.error('IndexedDB error:', event.target.error);
-  //   };
-  // }
-
-  // -------------------------
-  // Employee CRUD
-  // -------------------------
-
+  // Add more comment about this function
+  // This function opens the IndexedDB database and creates the object store if it doesn't exist.
   private openDatabase(): Promise<IDBDatabase> {
 
     return new Promise((resolve, reject) => {
 
+      // Open the IndexedDB database with the specified name and version.
       const request = indexedDB.open(
         this.dbName,
         this.dbVersion
       );
 
+      // Handle the onupgradeneeded event to create the object store if it doesn't exist.
       request.onupgradeneeded = (event: any) => {
 
-        const db = event.target.result;
+        const db: IDBDatabase = event.target.result;
 
-        if (!db.objectStoreNames.contains('employees')) {
-          db.createObjectStore('employees', {
-            keyPath: 'id',
-            autoIncrement: true
-          });
-        }
+        if (!db.objectStoreNames.contains(this.storeName)) {
 
-        if (!db.objectStoreNames.contains('products')) {
-          db.createObjectStore('products', {
+          db.createObjectStore(this.storeName, {
             keyPath: 'id',
             autoIncrement: true
           });
         }
       };
 
-      request.onsuccess = (event: any) => {
-
-        this.db = event.target.result;
-
-        console.log('IndexedDB connected');
-
-        resolve(this.db);
-      };
-
-      request.onerror = () => {
-        reject(request.error);
-      };
-    });
-  }
-
-  // addEmployee(employee: Employee): void {
-
-  //   const transaction = this.db.transaction(
-  //     'employees',
-  //     'readwrite'
-  //   );
-
-  //   const store = transaction.objectStore('employees');
-
-  //   store.add(employee);
-  // }
-
-  async addEmployee(employee: Employee): Promise<void> {
-
-    const db = await this.dbReady;
-
-    const transaction = db.transaction(
-      'employees',
-      'readwrite'
-    );
-
-    transaction.objectStore('employees').add(employee);
-  }
-
-  // getEmployees(): Promise<Employee[]> {
-
-  //   return new Promise((resolve, reject) => {
-
-  //     const transaction = this.db.transaction(
-  //       'employees',
-  //       'readonly'
-  //     );
-
-  //     const store = transaction.objectStore('employees');
-
-  //     const request = store.getAll();
-
-  //     request.onsuccess = () => {
-  //       resolve(request.result);
-  //     };
-
-  //     request.onerror = () => {
-  //       reject(request.error);
-  //     };
-  //   });
-  // }
-
-  async getEmployees(): Promise<Employee[]> {
-
-    const db = await this.dbReady;
-
-    return new Promise((resolve, reject) => {
-
-      const transaction = db.transaction(
-        'employees',
-        'readonly'
-      );
-
-      const request = transaction
-        .objectStore('employees')
-        .getAll();
-
+      // Handle the onsuccess event to resolve the promise with the opened database.
       request.onsuccess = () => {
         resolve(request.result);
       };
 
+      // Handle the onerror event to reject the promise with the error.
       request.onerror = () => {
+        console.error(
+          'Failed to open E1Log IndexedDB:',
+          request.error
+        );
+
         reject(request.error);
       };
     });
   }
 
-  async updateEmployee(employee: Employee): Promise<void> {
 
-    const transaction = this.db.transaction(
-      'employees',
-      'readwrite'
-    );
+  // Add more comment about this function
+  // This function is called by Angular's ErrorHandler to log errors.
+  handleError(error: any): void {
 
-    transaction.objectStore('employees').put(employee);
+    const message = error?.message || String(error);
+    const stack = error?.stack;
+
+    this.error(message, stack);
+
+    // Keep normal Angular/browser console error
+    console.error(error);
   }
 
-  async deleteEmployee(id: number): Promise<void> {
 
-    const transaction = this.db.transaction(
-      'employees',
-      'readwrite'
+  /**
+   * Registers browser-level global error handlers.
+   *
+   * window.onerror:
+   * Captures JavaScript runtime errors that may not
+   * be handled by Angular's ErrorHandler.
+   *
+   * unhandledrejection:
+   * Captures unhandled Promise/async errors.
+   */
+  private registerGlobalErrorHandlers(): void {
+
+    window.onerror = (
+      message,
+      source,
+      lineno,
+      colno,
+      error
+    ) => {
+
+      const errorMessage =
+        error?.message ||
+        String(message);
+
+      const stack =
+        error?.stack ||
+        `Source: ${source}, Line: ${lineno}, Column: ${colno}`;
+
+      this.error(
+        errorMessage,
+        stack
+      );
+
+      // Return false so the browser keeps its normal error handling.
+      return false;
+    };
+
+
+    window.addEventListener(
+      'unhandledrejection',
+      (event: PromiseRejectionEvent) => {
+
+        const reason = event.reason;
+
+        const message =
+          reason?.message ||
+          String(reason);
+
+        const stack =
+          reason?.stack;
+
+        this.error(
+          message,
+          stack
+        );
+
+        // Keep the normal browser unhandled-rejection behavior.
+        console.error(
+          'Unhandled Promise rejection:',
+          reason
+        );
+      }
     );
-
-    transaction.objectStore('employees').delete(id);
   }
 
-  // -------------------------
-  // Product CRUD
-  // -------------------------
+  /**
+   * Store an error log
+   */
+  error(
+    message: string,
+    stack?: string
+  ): void {
 
-  async addProduct(product: Product): Promise<void> {
-
-    const transaction = this.db.transaction(
-      'products',
-      'readwrite'
-    );
-
-    transaction.objectStore('products').add(product);
+    this.addLog({
+      LogType: 'Error',
+      Message: message,
+      DateTime: new Date().toISOString(),
+      Url: window.location.href,
+      Stack: stack
+    });
   }
 
-  async getProducts(): Promise<Product[]> {
+  /**
+   * Store a warning log
+   */
+  warning(
+    message: string
+  ): void {
+
+    this.addLog({
+      LogType: 'Warning',
+      Message: message,
+      DateTime: new Date().toISOString(),
+      Url: window.location.href
+    });
+  }
+
+  /**
+   * Store an information log
+   */
+  info(
+    message: string
+  ): void {
+
+    this.addLog({
+      LogType: 'Info',
+      Message: message,
+      DateTime: new Date().toISOString(),
+      Url: window.location.href
+    });
+  }
+
+  private async addLog(log: E1Log): Promise<void> {
+
+    try {
+
+      const db = await this.dbReady;
+
+      const transaction = db.transaction(
+        this.storeName,
+        'readwrite'
+      );
+
+      const store = transaction.objectStore(
+        this.storeName
+      );
+
+      store.add(log);
+
+    } catch (error) {
+
+      // Never allow logging failure to break the application.
+      console.error(
+        'Failed to save E1Log:',
+        error
+      );
+    }
+  }
+
+  /**
+   * Get all logs
+   */
+  async getLogs(): Promise<E1Log[]> {
 
     const db = await this.dbReady;
 
     return new Promise((resolve, reject) => {
 
       const transaction = db.transaction(
-        'products',
+        this.storeName,
         'readonly'
       );
 
-      const store = transaction.objectStore('products');
+      const store = transaction.objectStore(
+        this.storeName
+      );
 
       const request = store.getAll();
 
@@ -233,33 +254,82 @@ export class IndexedDbService {
     });
   }
 
-  async updateProduct(product: Product): Promise<void> {
+  exportLogs(): void {
 
-    const transaction = this.db.transaction(
-      'products',
-      'readwrite'
-    );
+    this.getLogs().then(logs => {
 
-    transaction.objectStore('products').put(product);
+      if (!logs || logs.length === 0) {
+        console.warn('No log data available to export.');
+        return;
+      }
+
+      const json = JSON.stringify(logs, null, 2);
+
+      const blob = new Blob(
+        [json],
+        { type: 'application/json' }
+      );
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+
+      const date = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-');
+
+      link.href = url;
+      // link.download = `E1Log_${date}.json`;
+      link.download = `E1Log_${new Date().toISOString().slice(0, 10)}.json`;
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(url);
+    })
+      .catch(error => {
+
+        console.error(
+          'Failed to export E1Log:',
+          error
+        );
+      });
   }
 
-  async deleteProduct(id: number): Promise<void> {
+  // handleError(error: any): void {
 
-    const transaction = this.db.transaction(
-      'products',
-      'readwrite'
-    );
+  //   const message = this.getErrorMessage(error);
+  //   const stack = this.getErrorStack(error);
 
-    transaction.objectStore('products').delete(id);
-  }
-  async exportData(): Promise<any> {
-    const employees = await this.getEmployees();
-    const products = await this.getProducts();
+  //   this.logService.error(message, stack);
 
-    return {
-      exportedAt: new Date().toISOString(),
-      employees: employees,
-      products: products
-    };
-  }
+  //   // Keep Angular's normal console error behavior
+  //   console.error(error);
+  // }
+
+  // private getErrorMessage(error: any): string {
+
+  //   if (!error) {
+  //     return 'Unknown application error';
+  //   }
+
+  //   if (error.message) {
+  //     return error.message;
+  //   }
+
+  //   return String(error);
+  // }
+
+  // private getErrorStack(error: any): string | undefined {
+
+  //   if (error && error.stack) {
+  //     return error.stack;
+  //   }
+
+  //   return undefined;
+  // }
+
 }
